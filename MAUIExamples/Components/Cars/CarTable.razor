@@ -1,0 +1,62 @@
+@inject CarService CarService
+<h3>Add New Car</h3>
+<div>
+    <label for="carName">Name: </label>
+    <input id="carName" @bind="newCar.Name" />
+
+    <label for="releaseDate">Release Date: </label>
+    <input id="releaseDate" type="date" @bind="newCar.ReleaseDate" />
+
+    <label for="producer">Producer: </label>
+    <select id="producer" @bind="newCar.ProducerId">
+        @foreach (var producer in producers)
+        {
+            <option value="@producer.Id">@producer.Name</option>
+        }
+    </select>
+
+    <button @onclick="AddCar">Add Car</button>
+</div>
+
+<h3>Car List</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Release Date</th>
+            <th>Producer</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var car in cars)
+        {
+            <tr>
+                <td>@car.Id</td>
+                <td>@car.Name</td>
+                <td>@car.ReleaseDate.ToShortDateString()</td>
+                <td>@producers.FirstOrDefault(p => p.Id == car.ProducerId)?.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private Car newCar = new Car();
+    private List<Car> cars;
+    private List<Producer> producers;
+
+    protected override void OnInitialized()
+    {
+        producers = CarService.GetProducers();
+        cars = CarService.GetCars();
+    }
+
+    private void AddCar()
+    {
+        CarService.AddCar(newCar);
+        cars = CarService.GetCars();
+        newCar = new Car();
+    }
+}

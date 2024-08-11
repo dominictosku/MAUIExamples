@@ -1,0 +1,82 @@
+@page "/localDatabase"
+@using CommunityToolkit.Maui.Storage
+@using MAUIExamples.Components.Cars
+@using MAUIExamples.Database
+@inject TodoItemDatabase database;
+<h1>Persist data in local database</h1>
+<div>Type in some data. The data will be saved inside a sqlLite db</div>
+<h3>Todo List</h3>
+<button @onclick="ResetDatabase" class="btn btn-danger">Reset Database</button>
+
+<ul>
+    @foreach (var item in todoItems)
+    {
+        <li>
+            <input type="checkbox" @bind="item.Done" @onclick="() => ToggleTodoItem(item)" />
+            <span style="text-decoration: @(item.Done ? "line-through" : "none")">
+                <strong>@item.Title:</strong> @item.Description
+            </span>
+            <button @onclick="async () => await DeleteTodoItem(item)">Delete</button>
+        </li>
+    }
+</ul>
+
+<h3>Add New Todo Item</h3>
+<div>
+    <label>Title:</label>
+    <input type="text" @bind="newTodoItem.Title" />
+</div>
+<div>
+    <label>Description:</label>
+    <input type="text" @bind="newTodoItem.Description" />
+</div>
+<div>
+    <button @onclick="AddTodoItem">Add</button>
+</div>
+
+@code {
+    private List<TodoItem> todoItems = new List<TodoItem>();
+    private TodoItem newTodoItem = new TodoItem();
+    string message = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await GetTodoItems();
+    }
+
+    private async Task GetTodoItems()
+    {
+        todoItems = await database.GetItemsAsync();
+    }
+
+    private async Task AddTodoItem()
+    {
+        await database.SaveItemAsync(newTodoItem);
+        newTodoItem = new TodoItem();
+        await GetTodoItems();
+    }
+
+    private async Task DeleteTodoItem(TodoItem item)
+    {
+        var itemToDelete = await database.GetItemAsync(item.Id);
+        if(itemToDelete == null)
+        {
+            return;
+        }
+        await database.DeleteItemAsync(item);
+        await GetTodoItems();
+    }
+
+    private async Task ToggleTodoItem(TodoItem item)
+    {
+        item.Done = !item.Done;
+        await database.SaveItemAsync(item);
+    }
+
+    private async Task ResetDatabase()
+    {
+        await database.ResetDatabase();
+        todoItems.Clear();
+    }
+}
