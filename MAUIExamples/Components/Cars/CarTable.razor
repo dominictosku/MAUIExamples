@@ -1,21 +1,26 @@
 @inject CarService CarService
+<div class="mt-4 mb-4">
 <h3>Add New Car</h3>
-<div>
-    <label for="carName">Name: </label>
-    <input id="carName" @bind="newCar.Name" />
+    <MudGrid>
+        <MudItem>
+            <MudPaper Class="pa-4">
+                <MudForm>
+                    <MudTextField T="string" @bind-Value="newCar.Name" Label="Name" Required="true" RequiredError="Name is required!" />
 
-    <label for="releaseDate">Release Date: </label>
-    <input id="releaseDate" type="date" @bind="newCar.ReleaseDate" />
+                    <MudDatePicker @bind-Value="newCar.ReleaseDate" Label="Date" Required="true" RequiredError="Release date is required!" />
 
-    <label for="producer">Producer: </label>
-    <select id="producer" @bind="newCar.ProducerId">
-        @foreach (var producer in producers)
-        {
-            <option value="@producer.Id">@producer.Name</option>
-        }
-    </select>
+                    <MudSelect @bind-Value="newCar.Producer" T="Producer" ToStringFunc="converter" Label="Producer" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var producer in producers)
+                        {
+                            <MudSelectItem Value="@(producer)" />
+                        }
+                    </MudSelect>
 
-    <button @onclick="AddCar">Add Car</button>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddCar">Add Car</MudButton>
+                </MudForm>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </div>
 
 <h3>Car List</h3>
@@ -47,6 +52,8 @@
     private List<Car> cars;
     private List<Producer> producers;
 
+    Func<Producer, string> converter = p => p?.Name;
+
     protected override void OnInitialized()
     {
         producers = CarService.GetProducers();
@@ -55,6 +62,7 @@
 
     private void AddCar()
     {
+        newCar.ProducerId = newCar.Producer?.Id ?? 0;
         CarService.AddCar(newCar);
         cars = CarService.GetCars();
         newCar = new Car();

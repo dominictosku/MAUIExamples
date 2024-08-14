@@ -6,7 +6,7 @@
 @implements IDisposable;
 <h1>Create an excel from data</h1>
 <div>Write down some cars down and create an Excel file from this data</div>
-<button @onclick="CreateExcel">Create Excel</button>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateExcel">Create Excel</MudButton>
 
 <CarTable />
 <div>Progress: @currentProgress</div>

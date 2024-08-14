@@ -5,34 +5,45 @@
 @inject TodoItemDatabase database;
 <h1>Persist data in local database</h1>
 <div>Type in some data. The data will be saved inside a sqlLite db</div>
-<h3>Todo List</h3>
-<button @onclick="ResetDatabase" class="btn btn-danger">Reset Database</button>
 
-<ul>
-    @foreach (var item in todoItems)
+<h3 class="mb-4">Todo List</h3>
+<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="ResetDatabase">Reset Database</MudButton>
+
+<div class="mb-4">
+    @if (todoItems.Any())
     {
-        <li>
-            <input type="checkbox" @bind="item.Done" @onclick="() => ToggleTodoItem(item)" />
-            <span style="text-decoration: @(item.Done ? "line-through" : "none")">
-                <strong>@item.Title:</strong> @item.Description
-            </span>
-            <button @onclick="async () => await DeleteTodoItem(item)">Delete</button>
-        </li>
+        <MudDataGrid Items="@todoItems">
+            <Columns>
+                <PropertyColumn Property="x => x.Title" Title="Title" />
+                <PropertyColumn Property="x => x.Description" />
+                <TemplateColumn>
+                    <CellTemplate>
+                        <MudStack Row>
+                            <input type="checkbox" @bind="@context.Item.Done" @onclick="() => ToggleTodoItem(context.Item)" />
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn>
+                    <CellTemplate>
+                        <MudStack Row>
+                            <MudButton OnClick="() => DeleteTodoItem(context.Item)">Delete </MudButton>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
     }
-</ul>
+</div>
+
 
 <h3>Add New Todo Item</h3>
-<div>
-    <label>Title:</label>
-    <input type="text" @bind="newTodoItem.Title" />
-</div>
-<div>
-    <label>Description:</label>
-    <input type="text" @bind="newTodoItem.Description" />
-</div>
-<div>
-    <button @onclick="AddTodoItem">Add</button>
-</div>
+<MudItem>
+    <MudTextField Label="Title" @bind-Value="newTodoItem.Title" />
+</MudItem>
+<MudItem>
+    <MudTextField Label="Description" @bind-Value="newTodoItem.Description" />
+</MudItem>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTodoItem">Add Todo</MudButton>
 
 @code {
     private List<TodoItem> todoItems = new List<TodoItem>();
@@ -60,7 +71,7 @@
     private async Task DeleteTodoItem(TodoItem item)
     {
         var itemToDelete = await database.GetItemAsync(item.Id);
-        if(itemToDelete == null)
+        if (itemToDelete == null)
         {
             return;
         }
